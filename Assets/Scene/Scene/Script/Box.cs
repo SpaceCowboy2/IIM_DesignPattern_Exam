@@ -4,8 +4,20 @@ using UnityEngine;
 
 public class Box : MonoBehaviour, ITouchable
 {
+    public bool isDestroyable = true;
+    [SerializeField] GameObject potionGo = null;
     public void Touch(int power)
     {
-        Destroy(gameObject);
+        // Wall security
+        if(isDestroyable)
+        {
+            Destroy(gameObject);
+            int randomNumber = Random.Range(0,3);
+
+            if(randomNumber == 0)
+            {
+                Instantiate(potionGo,gameObject.transform.position,Quaternion.identity);
+            }
+        }
     }
 }

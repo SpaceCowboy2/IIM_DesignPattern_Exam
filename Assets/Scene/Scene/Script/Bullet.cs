@@ -9,7 +9,7 @@ public class Bullet : MonoBehaviour
     [SerializeField] Rigidbody2D _rb;
     [SerializeField] float _speed;
     [SerializeField] float _collisionCooldown = 0.5f;
-
+    [HideInInspector] public BulletPool pool;
     public Vector3 Direction { get; private set; }
     public int Power { get; private set; }
     float LaunchTime { get; set; }
@@ -26,7 +26,7 @@ public class Bullet : MonoBehaviour
     {
         _rb.MovePosition((transform.position + (Direction.normalized * _speed)));
     }
-    
+
     void LateUpdate()
     {
         transform.rotation = EntityRotation.AimPositionToZRotation(transform.position, transform.position + Direction);
@@ -36,15 +36,35 @@ public class Bullet : MonoBehaviour
     {
         if (Time.fixedTime < LaunchTime + _collisionCooldown) return;
 
-        collision.GetComponent<IHealth>()?.TakeDamage(Power);
-        Destroy(gameObject);
+        //collision.GetComponent<IHealth>()?.TakeDamage(Power);
+
+
+        if (collision.TryGetComponent<ITouchable>(out ITouchable touch))
+        {
+            pool.CollectBullet(this);
+            touch.Touch(1);
+        }
+        else if (collision.TryGetComponent<IHealth>(out IHealth health))
+        {
+            health?.TakeDamage(Power);
+            pool.CollectBullet(this);
+        }
+
     }
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (Time.fixedTime < LaunchTime + _collisionCooldown) return;
 
-        collision.collider.GetComponent<IHealth>()?.TakeDamage(Power);
-        Destroy(gameObject);
+        if (collision.collider.TryGetComponent<ITouchable>(out ITouchable touch))
+        {
+            pool.CollectBullet(this);
+            touch.Touch(1);
+        }
+        else if (collision.collider.TryGetComponent<IHealth>(out IHealth health))
+        {
+            health?.TakeDamage(Power);
+            pool.CollectBullet(this);
+        }
     }
 
     private void Health_OnDamage(int arg0)

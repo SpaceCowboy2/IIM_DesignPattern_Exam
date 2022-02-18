@@ -17,9 +17,12 @@ public class Health : MonoBehaviour, IHealth
     public int MaxHealth => _maxHealth;
     public bool IsDead => CurrentHealth <= 0;
 
+    public bool hasShield = false;
+
     // Events
     public event UnityAction OnSpawn;
     public event UnityAction<int> OnDamage;
+    public event UnityAction OnUpdateUIHealth;
     public event UnityAction OnDeath { add => _onDeath.AddListener(value); remove => _onDeath.RemoveListener(value); }
 
     // Methods
@@ -33,6 +36,9 @@ public class Health : MonoBehaviour, IHealth
 
     public void TakeDamage(int amount)
     {
+        // Can't take damages if you're shielded
+        if (hasShield) return;
+
         if (amount < 0) throw new ArgumentException($"Argument amount {nameof(amount)} is negativ");
 
         var tmp = CurrentHealth;
@@ -45,6 +51,22 @@ public class Health : MonoBehaviour, IHealth
             _onDeath?.Invoke();
         }
 
+        OnUpdateUIHealth?.Invoke();
+
+    }
+
+    public void Heal(int amount)
+    {
+        if (amount < 0) throw new ArgumentException($"Argument amount {nameof(amount)} is negativ");
+
+        CurrentHealth += amount;
+
+        if(CurrentHealth > MaxHealth)
+        {
+            CurrentHealth = MaxHealth;
+        }
+
+        OnUpdateUIHealth?.Invoke();
     }
 
     [Button("test")]

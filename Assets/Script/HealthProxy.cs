@@ -29,6 +29,11 @@ public class HealthProxy : MonoBehaviour, IHealth
         add => _health.OnDeath += value;
         remove => _health.OnDeath -= value;
     }
+    public event UnityAction OnUpdateUIHealth
+    {
+        add => _health.OnUpdateUIHealth += value;
+        remove => _health.OnUpdateUIHealth -= value;
+    }
 
     public void TakeDamage(int amount) => _health.TakeDamage(amount);
 
